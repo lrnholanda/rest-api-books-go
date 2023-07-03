@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
-	"gin"
 
+	"github.com/gin-gonic/gin"
 	"github.com/qiniu/qmgo"
 )
 
@@ -29,4 +29,10 @@ func main() {
 	}()
 
 	router := gin.Default() // create router using gin
+
+	// register routes
+	router.POST("/books", CreateBook)
+
+	fmt.Println("Service is up & running at localhost:8000")
+	router.Run(":8000") // register router to port 8000
 }
