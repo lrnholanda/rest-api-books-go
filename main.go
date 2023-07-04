@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
-	"github.com/qiniu/qmgo"
+	qmgo "github.com/qiniu/qmgo"
 )
 
 var database *qmgo.Database
@@ -32,7 +32,12 @@ func main() {
 
 	// register routes
 	router.POST("/books", CreateBook)
+	router.GET("/books", GetBooks)
+	router.GET("/books/:bookId", GetBook)
+	router.PATCH("/books/:bookId", UpdateBook)
+	router.DELETE("/books/:bookId", DeleteBook)
 
 	fmt.Println("Service is up & running at localhost:8000")
 	router.Run(":8000") // register router to port 8000
+
 }

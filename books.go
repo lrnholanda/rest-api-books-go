@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -28,6 +29,11 @@ type BookResponse struct {
 	Author    string             `json:"author"`
 	CreatedAt time.Time          `json:"createdAt"`
 	UpdatedAt time.Time          `json:"updatedAt"`
+}
+
+type BookListResponse struct {
+	Id    primitive.ObjectID `json:"id" bson:"_id"` // bson to map mongo _id to id
+	Title string             `json:"title"`
 }
 
 // Create the Database model structure:
@@ -173,4 +179,19 @@ func DeleteBook(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, true)
 }
 
-func GetBooks(ctx *gin.Context) {}
+func GetBooks(ctx *gin.Context) {
+
+	// Getting the Book Data to database
+	var books []BookListResponse
+	err := collection.Find(ctx, bson.M{}).All(&books)
+
+	// to send error response if any error occurs
+
+	if err != nil {
+		fmt.Println(err)
+		ctx.JSON(http.StatusInternalServerError, "Something went wrong, Try again after sometime")
+		return
+	}
+	// to send success response on completion
+	ctx.JSON(http.StatusOK, books)
+}
