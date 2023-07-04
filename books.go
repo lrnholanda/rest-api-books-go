@@ -98,3 +98,79 @@ func GetBook(ctx *gin.Context) {
 	// to send succes response on completion
 	ctx.JSON(http.StatusOK, GetBooksResponse(book))
 }
+
+// Update a book API
+
+func UpdateBook(ctx *gin.Context) {
+	// to get and covert the received path variable to desired type
+	bookId, err := primitive.ObjectIDFromHex(ctx.Param("bookId"))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, "Invalid Book ID")
+		return
+	}
+
+	var newBook BookCreateUpdateRequest
+
+	// to bind the received JSON to BookRequest to strip the unnecessary fields.
+	if err := ctx.ShouldBind(&newBook); err != nil {
+		ctx.JSON(http.StatusBadRequest, "Invalid Request")
+		return
+	}
+
+	// Getting the Book Data from database
+	var book Book
+	err = collection.Find(ctx, bson.M{"_id": bookId}).One(&book)
+
+	// to send error response if any error occurs
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, "Book Not Found")
+		return
+	}
+
+	// set the updated value in the book
+	book.Author = newBook.Author
+	book.Title = newBook.Title
+
+	// update in database
+	err = collection.ReplaceOne(ctx, bson.M{"_id": bookId}, &book)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, "Something went wrong, Try again after sometime")
+		return
+	}
+
+	// to send success response on completion
+	ctx.JSON(http.StatusOK, GetBooksResponse(book))
+}
+
+func DeleteBook(ctx *gin.Context) {
+
+	// to get and convert the received path variable to desired type
+	bookId, err := primitive.ObjectIDFromHex(ctx.Param("bookId"))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, "Invalid Request")
+		return
+	}
+
+	// Getting the Book Data from database
+	var book Book
+	err = collection.Find(ctx, bson.M{"_id": bookId}).One(&book)
+
+	// to send error response if any error occurs
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, "Book not found")
+		return
+	}
+
+	// Deleting the book
+	err = collection.RemoveId(ctx, bookId)
+
+	// to send error response if any error occurs
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, "Something went wrong, Try again after sometime")
+		return
+	}
+	// to send success response on completion
+	ctx.JSON(http.StatusOK, true)
+}
+
+func GetBooks(ctx *gin.Context) {}
