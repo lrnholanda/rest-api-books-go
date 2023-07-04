@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/qiniu/qmgo/field"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -73,4 +74,27 @@ func GetBooksResponse(book Book) (bookResponse BookResponse) {
 		UpdatedAt: book.UpdateAt,
 	}
 	return
+}
+
+func GetBook(ctx *gin.Context) {
+
+	// to get and convert the received path variable to desired type
+	bookId, err := primitive.ObjectIDFromHex(ctx.Param("bookId"))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, "Invalid Request")
+		return
+	}
+
+	//Getting the Book Data from database
+	var book Book
+	err = collection.Find(ctx, bson.M{"_id": bookId}).One(&book)
+
+	// to send error response if any error occurs
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, "Book Not Found")
+		return
+	}
+
+	// to send succes response on completion
+	ctx.JSON(http.StatusOK, GetBooksResponse(book))
 }
